@@ -1,0 +1,2 @@
+# plugin-score
+Pipeline plugin
