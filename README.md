@@ -66,3 +66,4 @@ Project License can be found [here](LICENSE).
 ## Reference
 
 - [go-plugin](https://github.com/hashicorp/go-plugin)
+- [kube-plugins](https://github.com/kubernetes/kubernetes/blob/master/pkg/scheduler/framework/plugins)
