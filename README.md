@@ -1,10 +1,6 @@
 # plugin-score
 
-[![Build Status](https://github.com/pipego/plugin-score/workflows/ci/badge.svg?branch=main&event=push)](https://github.com/pipego/plugin-score/actions?query=workflow%3Aci)
-[![codecov](https://codecov.io/gh/pipego/plugin-score/branch/main/graph/badge.svg?token=y5anikgcTz)](https://codecov.io/gh/pipego/plugin-score)
-[![Go Report Card](https://goreportcard.com/badge/github.com/pipego/plugin-score)](https://goreportcard.com/report/github.com/pipego/plugin-score)
 [![License](https://img.shields.io/github/license/pipego/plugin-score.svg)](https://github.com/pipego/plugin-score/blob/main/LICENSE)
-[![Tag](https://img.shields.io/github/tag/pipego/plugin-score.svg)](https://github.com/pipego/plugin-score/tags)
 
 
 
@@ -23,24 +19,37 @@
 ## Run
 
 ```bash
-TBD
+# Template
+go env -w GOPROXY=https://goproxy.cn,direct
+
+cd template
+golangci-lint run
+CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags "-s -w" -o plugin/plugin-score-template main.go
+upx plugin/plugin-score-template
+```
+
+
+
+```bash
+# Test
+go env -w GOPROXY=https://goproxy.cn,direct
+
+cd test
+golangci-lint run
+CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags "-s -w" -o bin/test main.go
+upx bin/test
+
+cp ../template/plugin/* bin/
+./bin/test
 ```
 
 
 
 ## Docker
 
-```bash
-TBD
-```
-
 
 
 ## Usage
-
-```
-TBD
-```
 
 
 
