@@ -1,6 +1,6 @@
 module github.com/pipego/plugin-score
 
-go 1.18
+go 1.17
 
 require (
 	github.com/hashicorp/go-hclog v0.14.1
