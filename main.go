@@ -36,12 +36,12 @@ var (
 
 func main() {
 	for _, item := range configs {
-		status, _ := helper(item.path, item.name, item.args)
-		fmt.Println(status.Error)
+		result := helper(item.path, item.name, item.args)
+		fmt.Println(result.Score)
 	}
 }
 
-func helper(path, name string, args *proto.Args) (proto.Status, error) {
+func helper(path, name string, args *proto.Args) proto.Result {
 	config := plugin.HandshakeConfig{
 		ProtocolVersion:  1,
 		MagicCookieKey:   "plugin-score",
@@ -71,5 +71,5 @@ func helper(path, name string, args *proto.Args) (proto.Status, error) {
 	n := raw.(proto.Score)
 	status := n.Score(args)
 
-	return status, nil
+	return status
 }

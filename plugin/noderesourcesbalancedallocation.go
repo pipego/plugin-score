@@ -5,19 +5,14 @@ import (
 	"github.com/pipego/plugin-score/proto"
 )
 
-const (
-	ErrReasonResourcesBalancedAllocation = "NodeResourcesBalancedAllocation: node(s) didn't match the resources balanced allocation"
-)
-
 type NodeResourcesBalancedAllocation struct{}
 
-func (n *NodeResourcesBalancedAllocation) Score(args *proto.Args) proto.Status {
-	var status proto.Status
+func (n *NodeResourcesBalancedAllocation) Score(args *proto.Args) proto.Result {
+	var result proto.Result
 
 	// TODO
-	status.Error = ErrReasonResourcesBalancedAllocation
 
-	return status
+	return result
 }
 
 // nolint:typecheck
