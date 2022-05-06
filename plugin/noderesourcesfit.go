@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	resourceToWeightMap = map[string]int64{
+	resourceToWeightMapFit = map[string]int64{
 		proto.ResourceCPU:     proto.DefaultCPUWeight,
 		proto.ResourceMemory:  proto.DefaultMemoryWeight,
 		proto.ResourceStorage: proto.DefaultStorageWeight,
@@ -14,13 +14,13 @@ var (
 )
 
 type NodeResourcesFit struct{}
-type resourceToValueMap map[string]int64
+type resourceToValueMapFit map[string]int64
 
 func (n *NodeResourcesFit) Score(args *proto.Args) proto.Result {
-	requested := make(resourceToValueMap)
-	allocatable := make(resourceToValueMap)
+	requested := make(resourceToValueMapFit)
+	allocatable := make(resourceToValueMapFit)
 
-	for resource := range resourceToWeightMap {
+	for resource := range resourceToWeightMapFit {
 		alloc, req := n.calculateResourceAllocatableRequest(&args.Node, &args.Task, resource)
 		if alloc != 0 {
 			allocatable[resource], requested[resource] = alloc, req
@@ -76,11 +76,11 @@ func (n *NodeResourcesFit) calculateTaskResourceRequest(task *proto.Task, resour
 //
 // Details:
 // (cpu((capacity-requested)*MaxNodeScore*cpuWeight/capacity) + memory((capacity-requested)*MaxNodeScore*memoryWeight/capacity) + ...)/weightSum
-func (n *NodeResourcesFit) leastResourceScorer(requested, allocable resourceToValueMap) int64 {
+func (n *NodeResourcesFit) leastResourceScorer(requested, allocable resourceToValueMapFit) int64 {
 	var nodeScore, weightSum int64
 
 	for resource := range requested {
-		weight := resourceToWeightMap[resource]
+		weight := resourceToWeightMapFit[resource]
 		resourceScore := n.leastRequestedScore(requested[resource], allocable[resource])
 		nodeScore += resourceScore * weight
 		weightSum += weight
