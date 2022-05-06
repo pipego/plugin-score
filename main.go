@@ -24,6 +24,28 @@ var (
 			args: &proto.Args{
 				Node: proto.Node{
 					AllocatableResource: proto.Resource{
+						MilliCPU: 2000,
+						Memory:   3000,
+					},
+					RequestedResource: proto.Resource{
+						MilliCPU: 256,
+						Memory:   512,
+					},
+				},
+				Task: proto.Task{
+					RequestedResource: proto.Resource{
+						MilliCPU: 1024,
+						Memory:   2048,
+					},
+				},
+			},
+			name: "NodeResourcesBalancedAllocation",
+			path: "./plugin/score-noderesourcesbalancedallocation",
+		},
+		{
+			args: &proto.Args{
+				Node: proto.Node{
+					AllocatableResource: proto.Resource{
 						MilliCPU: 1024,
 						Memory:   2048,
 						Storage:  4096,
@@ -62,6 +84,31 @@ var (
 				},
 				Task: proto.Task{
 					RequestedResource: proto.Resource{
+						MilliCPU: 1024,
+						Memory:   2048,
+						Storage:  4096,
+					},
+				},
+			},
+			name: "NodeResourcesFit",
+			path: "./plugin/score-noderesourcesfit",
+		},
+		{
+			args: &proto.Args{
+				Node: proto.Node{
+					AllocatableResource: proto.Resource{
+						MilliCPU: 1024,
+						Memory:   2048,
+						Storage:  4096,
+					},
+					RequestedResource: proto.Resource{
+						MilliCPU: 512,
+						Memory:   1024,
+						Storage:  2048,
+					},
+				},
+				Task: proto.Task{
+					RequestedResource: proto.Resource{
 						MilliCPU: 256,
 						Memory:   512,
 						Storage:  1024,
@@ -77,7 +124,7 @@ var (
 func main() {
 	for _, item := range configs {
 		result := helper(item.path, item.name, item.args)
-		fmt.Println(result.Score)
+		fmt.Printf("%s: %d\n", item.name, result.Score)
 	}
 }
 
