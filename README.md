@@ -35,8 +35,8 @@ make build
 
 ## Usage
 
-- `plugin/noderesourcesbalancedallocation.go`: Checks if a Task spec node name matches the current node.
-- `plugin/noderesourcesfit.go`: Checks if a Task spec node name matches the current node.
+- `plugin/noderesourcesbalancedallocation.go`: Favors nodes that would obtain a more balanced resource usage if the Task is scheduled there.
+- `plugin/noderesourcesfit.go`: Checks if the node has all the resources that the Task is requesting. 
 
 
 
