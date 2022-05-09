@@ -1,22 +1,24 @@
 package main
 
 import (
-	"github.com/hashicorp/go-plugin"
-	"github.com/pipego/plugin-score/proto"
+	gop "github.com/hashicorp/go-plugin"
+
+	"github.com/pipego/plugin-score/common"
+	"github.com/pipego/scheduler/plugin"
 )
 
 var (
 	resourceToWeightMapFit = map[string]int64{
-		proto.ResourceCPU:     proto.DefaultCPUWeight,
-		proto.ResourceMemory:  proto.DefaultMemoryWeight,
-		proto.ResourceStorage: proto.DefaultStorageWeight,
+		plugin.ResourceCPU:     plugin.DefaultCPUWeight,
+		plugin.ResourceMemory:  plugin.DefaultMemoryWeight,
+		plugin.ResourceStorage: plugin.DefaultStorageWeight,
 	}
 )
 
 type NodeResourcesFit struct{}
 type resourceToValueMapFit map[string]int64
 
-func (n *NodeResourcesFit) Score(args *proto.Args) proto.Result {
+func (n *NodeResourcesFit) Score(args *plugin.Args) common.Result {
 	requested := make(resourceToValueMapFit)
 	allocatable := make(resourceToValueMapFit)
 
@@ -27,20 +29,20 @@ func (n *NodeResourcesFit) Score(args *proto.Args) proto.Result {
 		}
 	}
 
-	return proto.Result{
+	return common.Result{
 		Score: n.leastResourceScorer(requested, allocatable),
 	}
 }
 
-func (n *NodeResourcesFit) calculateResourceAllocatableRequest(node *proto.Node, task *proto.Task, resource string) (int64, int64) {
+func (n *NodeResourcesFit) calculateResourceAllocatableRequest(node *plugin.Node, task *plugin.Task, resource string) (int64, int64) {
 	taskRequest := n.calculateTaskResourceRequest(task, resource)
 
 	switch resource {
-	case proto.ResourceCPU:
+	case plugin.ResourceCPU:
 		return node.AllocatableResource.MilliCPU, node.RequestedResource.MilliCPU + taskRequest
-	case proto.ResourceMemory:
+	case plugin.ResourceMemory:
 		return node.AllocatableResource.Memory, node.RequestedResource.Memory + taskRequest
-	case proto.ResourceStorage:
+	case plugin.ResourceStorage:
 		return node.AllocatableResource.Storage, node.RequestedResource.Storage + taskRequest
 	default:
 		// BYPASS
@@ -49,19 +51,19 @@ func (n *NodeResourcesFit) calculateResourceAllocatableRequest(node *proto.Node,
 	return 0, 0
 }
 
-func (n *NodeResourcesFit) calculateTaskResourceRequest(task *proto.Task, resource string) int64 {
+func (n *NodeResourcesFit) calculateTaskResourceRequest(task *plugin.Task, resource string) int64 {
 	switch resource {
-	case proto.ResourceCPU:
+	case plugin.ResourceCPU:
 		if task.RequestedResource.MilliCPU == 0 {
-			return proto.DefaultMilliCPURequest
+			return plugin.DefaultMilliCPURequest
 		}
 		return task.RequestedResource.MilliCPU
-	case proto.ResourceMemory:
+	case plugin.ResourceMemory:
 		if task.RequestedResource.Memory == 0 {
-			return proto.DefaultMemoryRequest
+			return plugin.DefaultMemoryRequest
 		}
 		return task.RequestedResource.Memory
-	case proto.ResourceStorage:
+	case plugin.ResourceStorage:
 		return task.RequestedResource.Storage
 	default:
 		// BYPASS
@@ -102,22 +104,22 @@ func (n *NodeResourcesFit) leastRequestedScore(requested, capacity int64) int64 
 		return 0
 	}
 
-	return ((capacity - requested) * proto.MaxNodeScore) / capacity
+	return ((capacity - requested) * plugin.MaxNodeScore) / capacity
 }
 
 // nolint:typecheck
 func main() {
-	config := plugin.HandshakeConfig{
+	config := gop.HandshakeConfig{
 		ProtocolVersion:  1,
 		MagicCookieKey:   "plugin-score",
 		MagicCookieValue: "plugin-score",
 	}
 
-	pluginMap := map[string]plugin.Plugin{
-		"NodeResourcesFit": &proto.ScorePlugin{Impl: &NodeResourcesFit{}},
+	pluginMap := map[string]gop.Plugin{
+		"NodeResourcesFit": &common.ScorePlugin{Impl: &NodeResourcesFit{}},
 	}
 
-	plugin.Serve(&plugin.ServeConfig{
+	gop.Serve(&gop.ServeConfig{
 		HandshakeConfig: config,
 		Plugins:         pluginMap,
 	})

@@ -6,13 +6,14 @@ import (
 	"os/exec"
 
 	"github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/go-plugin"
+	gop "github.com/hashicorp/go-plugin"
 
-	"github.com/pipego/plugin-score/proto"
+	"github.com/pipego/plugin-score/common"
+	"github.com/pipego/scheduler/plugin"
 )
 
 type config struct {
-	args *proto.Args
+	args *plugin.Args
 	name string
 	path string
 }
@@ -21,19 +22,19 @@ var (
 	configs = []config{
 		// Plugin: NodeResourcesBalancedAllocation
 		{
-			args: &proto.Args{
-				Node: proto.Node{
-					AllocatableResource: proto.Resource{
+			args: &plugin.Args{
+				Node: plugin.Node{
+					AllocatableResource: plugin.Resource{
 						MilliCPU: 2000,
 						Memory:   3000,
 					},
-					RequestedResource: proto.Resource{
+					RequestedResource: plugin.Resource{
 						MilliCPU: 256,
 						Memory:   512,
 					},
 				},
-				Task: proto.Task{
-					RequestedResource: proto.Resource{
+				Task: plugin.Task{
+					RequestedResource: plugin.Resource{
 						MilliCPU: 1024,
 						Memory:   2048,
 					},
@@ -43,21 +44,21 @@ var (
 			path: "./plugin/score-noderesourcesbalancedallocation",
 		},
 		{
-			args: &proto.Args{
-				Node: proto.Node{
-					AllocatableResource: proto.Resource{
+			args: &plugin.Args{
+				Node: plugin.Node{
+					AllocatableResource: plugin.Resource{
 						MilliCPU: 1024,
 						Memory:   2048,
 						Storage:  4096,
 					},
-					RequestedResource: proto.Resource{
+					RequestedResource: plugin.Resource{
 						MilliCPU: 512,
 						Memory:   1024,
 						Storage:  2048,
 					},
 				},
-				Task: proto.Task{
-					RequestedResource: proto.Resource{
+				Task: plugin.Task{
+					RequestedResource: plugin.Resource{
 						MilliCPU: 256,
 						Memory:   512,
 						Storage:  1024,
@@ -69,21 +70,21 @@ var (
 		},
 		// Plugin: NodeResourcesFit
 		{
-			args: &proto.Args{
-				Node: proto.Node{
-					AllocatableResource: proto.Resource{
+			args: &plugin.Args{
+				Node: plugin.Node{
+					AllocatableResource: plugin.Resource{
 						MilliCPU: 1024,
 						Memory:   2048,
 						Storage:  4096,
 					},
-					RequestedResource: proto.Resource{
+					RequestedResource: plugin.Resource{
 						MilliCPU: 512,
 						Memory:   1024,
 						Storage:  2048,
 					},
 				},
-				Task: proto.Task{
-					RequestedResource: proto.Resource{
+				Task: plugin.Task{
+					RequestedResource: plugin.Resource{
 						MilliCPU: 1024,
 						Memory:   2048,
 						Storage:  4096,
@@ -94,21 +95,21 @@ var (
 			path: "./plugin/score-noderesourcesfit",
 		},
 		{
-			args: &proto.Args{
-				Node: proto.Node{
-					AllocatableResource: proto.Resource{
+			args: &plugin.Args{
+				Node: plugin.Node{
+					AllocatableResource: plugin.Resource{
 						MilliCPU: 1024,
 						Memory:   2048,
 						Storage:  4096,
 					},
-					RequestedResource: proto.Resource{
+					RequestedResource: plugin.Resource{
 						MilliCPU: 512,
 						Memory:   1024,
 						Storage:  2048,
 					},
 				},
-				Task: proto.Task{
-					RequestedResource: proto.Resource{
+				Task: plugin.Task{
+					RequestedResource: plugin.Resource{
 						MilliCPU: 256,
 						Memory:   512,
 						Storage:  1024,
@@ -128,8 +129,8 @@ func main() {
 	}
 }
 
-func helper(path, name string, args *proto.Args) proto.Result {
-	config := plugin.HandshakeConfig{
+func helper(path, name string, args *plugin.Args) common.Result {
+	config := gop.HandshakeConfig{
 		ProtocolVersion:  1,
 		MagicCookieKey:   "plugin-score",
 		MagicCookieValue: "plugin-score",
@@ -141,11 +142,11 @@ func helper(path, name string, args *proto.Args) proto.Result {
 		Level:  hclog.Error,
 	})
 
-	plugins := map[string]plugin.Plugin{
-		name: &proto.ScorePlugin{},
+	plugins := map[string]gop.Plugin{
+		name: &common.ScorePlugin{},
 	}
 
-	client := plugin.NewClient(&plugin.ClientConfig{
+	client := gop.NewClient(&gop.ClientConfig{
 		Cmd:             exec.Command(path),
 		HandshakeConfig: config,
 		Logger:          logger,
@@ -155,7 +156,7 @@ func helper(path, name string, args *proto.Args) proto.Result {
 
 	rpcClient, _ := client.Client()
 	raw, _ := rpcClient.Dispense(name)
-	n := raw.(proto.Score)
+	n := raw.(common.Score)
 	status := n.Score(args)
 
 	return status

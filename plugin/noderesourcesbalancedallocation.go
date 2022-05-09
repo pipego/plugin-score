@@ -1,23 +1,26 @@
 package main
 
 import (
-	"github.com/hashicorp/go-plugin"
-	"github.com/pipego/plugin-score/proto"
 	"math"
+
+	gop "github.com/hashicorp/go-plugin"
+
+	"github.com/pipego/plugin-score/common"
+	"github.com/pipego/scheduler/plugin"
 )
 
 var (
 	resourceToWeightMapAllocation = map[string]int64{
-		proto.ResourceCPU:     proto.DefaultCPUWeight,
-		proto.ResourceMemory:  proto.DefaultMemoryWeight,
-		proto.ResourceStorage: proto.DefaultStorageWeight,
+		plugin.ResourceCPU:     plugin.DefaultCPUWeight,
+		plugin.ResourceMemory:  plugin.DefaultMemoryWeight,
+		plugin.ResourceStorage: plugin.DefaultStorageWeight,
 	}
 )
 
 type NodeResourcesBalancedAllocation struct{}
 type resourceToValueMapAllocation map[string]int64
 
-func (n *NodeResourcesBalancedAllocation) Score(args *proto.Args) proto.Result {
+func (n *NodeResourcesBalancedAllocation) Score(args *plugin.Args) common.Result {
 	requested := make(resourceToValueMapAllocation)
 	allocatable := make(resourceToValueMapAllocation)
 
@@ -28,20 +31,20 @@ func (n *NodeResourcesBalancedAllocation) Score(args *proto.Args) proto.Result {
 		}
 	}
 
-	return proto.Result{
+	return common.Result{
 		Score: n.balancedResourceScorer(requested, allocatable),
 	}
 }
 
-func (n *NodeResourcesBalancedAllocation) calculateResourceAllocatableRequest(node *proto.Node, task *proto.Task, resource string) (int64, int64) {
+func (n *NodeResourcesBalancedAllocation) calculateResourceAllocatableRequest(node *plugin.Node, task *plugin.Task, resource string) (int64, int64) {
 	taskRequest := n.calculateTaskResourceRequest(task, resource)
 
 	switch resource {
-	case proto.ResourceCPU:
+	case plugin.ResourceCPU:
 		return node.AllocatableResource.MilliCPU, node.RequestedResource.MilliCPU + taskRequest
-	case proto.ResourceMemory:
+	case plugin.ResourceMemory:
 		return node.AllocatableResource.Memory, node.RequestedResource.Memory + taskRequest
-	case proto.ResourceStorage:
+	case plugin.ResourceStorage:
 		return node.AllocatableResource.Storage, node.RequestedResource.Storage + taskRequest
 	default:
 		// BYPASS
@@ -50,19 +53,19 @@ func (n *NodeResourcesBalancedAllocation) calculateResourceAllocatableRequest(no
 	return 0, 0
 }
 
-func (n *NodeResourcesBalancedAllocation) calculateTaskResourceRequest(task *proto.Task, resource string) int64 {
+func (n *NodeResourcesBalancedAllocation) calculateTaskResourceRequest(task *plugin.Task, resource string) int64 {
 	switch resource {
-	case proto.ResourceCPU:
+	case plugin.ResourceCPU:
 		if task.RequestedResource.MilliCPU == 0 {
-			return proto.DefaultMilliCPURequest
+			return plugin.DefaultMilliCPURequest
 		}
 		return task.RequestedResource.MilliCPU
-	case proto.ResourceMemory:
+	case plugin.ResourceMemory:
 		if task.RequestedResource.Memory == 0 {
-			return proto.DefaultMemoryRequest
+			return plugin.DefaultMemoryRequest
 		}
 		return task.RequestedResource.Memory
-	case proto.ResourceStorage:
+	case plugin.ResourceStorage:
 		return task.RequestedResource.Storage
 	default:
 		// BYPASS
@@ -102,22 +105,22 @@ func (n *NodeResourcesBalancedAllocation) balancedResourceScorer(requested, allo
 
 	// STD (standard deviation) is always a positive value. 1-deviation lets the score to be higher for node which has least deviation and
 	// multiplying it with `MaxNodeScore` provides the scaling factor needed.
-	return int64((1 - std) * float64(proto.MaxNodeScore))
+	return int64((1 - std) * float64(plugin.MaxNodeScore))
 }
 
 // nolint:typecheck
 func main() {
-	config := plugin.HandshakeConfig{
+	config := gop.HandshakeConfig{
 		ProtocolVersion:  1,
 		MagicCookieKey:   "plugin-score",
 		MagicCookieValue: "plugin-score",
 	}
 
-	pluginMap := map[string]plugin.Plugin{
-		"NodeResourcesBalancedAllocation": &proto.ScorePlugin{Impl: &NodeResourcesBalancedAllocation{}},
+	pluginMap := map[string]gop.Plugin{
+		"NodeResourcesBalancedAllocation": &common.ScorePlugin{Impl: &NodeResourcesBalancedAllocation{}},
 	}
 
-	plugin.Serve(&plugin.ServeConfig{
+	gop.Serve(&gop.ServeConfig{
 		HandshakeConfig: config,
 		Plugins:         pluginMap,
 	})
