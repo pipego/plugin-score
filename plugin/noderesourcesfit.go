@@ -3,22 +3,22 @@ package main
 import (
 	gop "github.com/hashicorp/go-plugin"
 
-	"github.com/pipego/plugin-score/common"
+	"github.com/pipego/scheduler/common"
 	"github.com/pipego/scheduler/plugin"
 )
 
 var (
 	resourceToWeightMapFit = map[string]int64{
-		plugin.ResourceCPU:     plugin.DefaultCPUWeight,
-		plugin.ResourceMemory:  plugin.DefaultMemoryWeight,
-		plugin.ResourceStorage: plugin.DefaultStorageWeight,
+		common.ResourceCPU:     common.DefaultCPUWeight,
+		common.ResourceMemory:  common.DefaultMemoryWeight,
+		common.ResourceStorage: common.DefaultStorageWeight,
 	}
 )
 
 type NodeResourcesFit struct{}
 type resourceToValueMapFit map[string]int64
 
-func (n *NodeResourcesFit) Run(args *plugin.Args) plugin.ScoreResult {
+func (n *NodeResourcesFit) Run(args *common.Args) plugin.ScoreResult {
 	requested := make(resourceToValueMapFit)
 	allocatable := make(resourceToValueMapFit)
 
@@ -34,15 +34,15 @@ func (n *NodeResourcesFit) Run(args *plugin.Args) plugin.ScoreResult {
 	}
 }
 
-func (n *NodeResourcesFit) calculateResourceAllocatableRequest(node *plugin.Node, task *plugin.Task, resource string) (int64, int64) {
+func (n *NodeResourcesFit) calculateResourceAllocatableRequest(node *common.Node, task *common.Task, resource string) (int64, int64) {
 	taskRequest := n.calculateTaskResourceRequest(task, resource)
 
 	switch resource {
-	case plugin.ResourceCPU:
+	case common.ResourceCPU:
 		return node.AllocatableResource.MilliCPU, node.RequestedResource.MilliCPU + taskRequest
-	case plugin.ResourceMemory:
+	case common.ResourceMemory:
 		return node.AllocatableResource.Memory, node.RequestedResource.Memory + taskRequest
-	case plugin.ResourceStorage:
+	case common.ResourceStorage:
 		return node.AllocatableResource.Storage, node.RequestedResource.Storage + taskRequest
 	default:
 		// BYPASS
@@ -51,19 +51,19 @@ func (n *NodeResourcesFit) calculateResourceAllocatableRequest(node *plugin.Node
 	return 0, 0
 }
 
-func (n *NodeResourcesFit) calculateTaskResourceRequest(task *plugin.Task, resource string) int64 {
+func (n *NodeResourcesFit) calculateTaskResourceRequest(task *common.Task, resource string) int64 {
 	switch resource {
-	case plugin.ResourceCPU:
+	case common.ResourceCPU:
 		if task.RequestedResource.MilliCPU == 0 {
-			return plugin.DefaultMilliCPURequest
+			return common.DefaultMilliCPURequest
 		}
 		return task.RequestedResource.MilliCPU
-	case plugin.ResourceMemory:
+	case common.ResourceMemory:
 		if task.RequestedResource.Memory == 0 {
-			return plugin.DefaultMemoryRequest
+			return common.DefaultMemoryRequest
 		}
 		return task.RequestedResource.Memory
-	case plugin.ResourceStorage:
+	case common.ResourceStorage:
 		return task.RequestedResource.Storage
 	default:
 		// BYPASS
@@ -104,19 +104,19 @@ func (n *NodeResourcesFit) leastRequestedScore(requested, capacity int64) int64 
 		return 0
 	}
 
-	return ((capacity - requested) * plugin.MaxNodeScore) / capacity
+	return ((capacity - requested) * common.MaxNodeScore) / capacity
 }
 
 // nolint:typecheck
 func main() {
 	config := gop.HandshakeConfig{
 		ProtocolVersion:  1,
-		MagicCookieKey:   "plugin-score",
-		MagicCookieValue: "plugin-score",
+		MagicCookieKey:   "plugin",
+		MagicCookieValue: "plugin",
 	}
 
 	pluginMap := map[string]gop.Plugin{
-		"NodeResourcesFit": &common.ScorePlugin{Impl: &NodeResourcesFit{}},
+		"NodeResourcesFit": &plugin.Score{Impl: &NodeResourcesFit{}},
 	}
 
 	gop.Serve(&gop.ServeConfig{

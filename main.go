@@ -8,12 +8,12 @@ import (
 	"github.com/hashicorp/go-hclog"
 	gop "github.com/hashicorp/go-plugin"
 
-	"github.com/pipego/plugin-score/common"
+	"github.com/pipego/scheduler/common"
 	"github.com/pipego/scheduler/plugin"
 )
 
 type config struct {
-	args *plugin.Args
+	args *common.Args
 	name string
 	path string
 }
@@ -22,19 +22,19 @@ var (
 	configs = []config{
 		// Plugin: NodeResourcesBalancedAllocation
 		{
-			args: &plugin.Args{
-				Node: plugin.Node{
-					AllocatableResource: plugin.Resource{
+			args: &common.Args{
+				Node: common.Node{
+					AllocatableResource: common.Resource{
 						MilliCPU: 2000,
 						Memory:   3000,
 					},
-					RequestedResource: plugin.Resource{
+					RequestedResource: common.Resource{
 						MilliCPU: 256,
 						Memory:   512,
 					},
 				},
-				Task: plugin.Task{
-					RequestedResource: plugin.Resource{
+				Task: common.Task{
+					RequestedResource: common.Resource{
 						MilliCPU: 1024,
 						Memory:   2048,
 					},
@@ -44,21 +44,21 @@ var (
 			path: "./plugin/score-noderesourcesbalancedallocation",
 		},
 		{
-			args: &plugin.Args{
-				Node: plugin.Node{
-					AllocatableResource: plugin.Resource{
+			args: &common.Args{
+				Node: common.Node{
+					AllocatableResource: common.Resource{
 						MilliCPU: 1024,
 						Memory:   2048,
 						Storage:  4096,
 					},
-					RequestedResource: plugin.Resource{
+					RequestedResource: common.Resource{
 						MilliCPU: 512,
 						Memory:   1024,
 						Storage:  2048,
 					},
 				},
-				Task: plugin.Task{
-					RequestedResource: plugin.Resource{
+				Task: common.Task{
+					RequestedResource: common.Resource{
 						MilliCPU: 256,
 						Memory:   512,
 						Storage:  1024,
@@ -70,21 +70,21 @@ var (
 		},
 		// Plugin: NodeResourcesFit
 		{
-			args: &plugin.Args{
-				Node: plugin.Node{
-					AllocatableResource: plugin.Resource{
+			args: &common.Args{
+				Node: common.Node{
+					AllocatableResource: common.Resource{
 						MilliCPU: 1024,
 						Memory:   2048,
 						Storage:  4096,
 					},
-					RequestedResource: plugin.Resource{
+					RequestedResource: common.Resource{
 						MilliCPU: 512,
 						Memory:   1024,
 						Storage:  2048,
 					},
 				},
-				Task: plugin.Task{
-					RequestedResource: plugin.Resource{
+				Task: common.Task{
+					RequestedResource: common.Resource{
 						MilliCPU: 1024,
 						Memory:   2048,
 						Storage:  4096,
@@ -95,21 +95,21 @@ var (
 			path: "./plugin/score-noderesourcesfit",
 		},
 		{
-			args: &plugin.Args{
-				Node: plugin.Node{
-					AllocatableResource: plugin.Resource{
+			args: &common.Args{
+				Node: common.Node{
+					AllocatableResource: common.Resource{
 						MilliCPU: 1024,
 						Memory:   2048,
 						Storage:  4096,
 					},
-					RequestedResource: plugin.Resource{
+					RequestedResource: common.Resource{
 						MilliCPU: 512,
 						Memory:   1024,
 						Storage:  2048,
 					},
 				},
-				Task: plugin.Task{
-					RequestedResource: plugin.Resource{
+				Task: common.Task{
+					RequestedResource: common.Resource{
 						MilliCPU: 256,
 						Memory:   512,
 						Storage:  1024,
@@ -129,21 +129,21 @@ func main() {
 	}
 }
 
-func helper(path, name string, args *plugin.Args) plugin.ScoreResult {
+func helper(path, name string, args *common.Args) plugin.ScoreResult {
 	config := gop.HandshakeConfig{
 		ProtocolVersion:  1,
-		MagicCookieKey:   "plugin-score",
-		MagicCookieValue: "plugin-score",
+		MagicCookieKey:   "plugin",
+		MagicCookieValue: "plugin",
 	}
 
 	logger := hclog.New(&hclog.LoggerOptions{
-		Name:   "plugin-score",
+		Name:   "plugin",
 		Output: os.Stderr,
 		Level:  hclog.Error,
 	})
 
 	plugins := map[string]gop.Plugin{
-		name: &common.ScorePlugin{},
+		name: &plugin.Score{},
 	}
 
 	client := gop.NewClient(&gop.ClientConfig{
