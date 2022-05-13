@@ -8,37 +8,29 @@ import (
 	"github.com/pipego/scheduler/plugin"
 )
 
-type Score interface {
-	Score(*plugin.Args) Result
-}
-
-type Result struct {
-	Score int64
-}
-
 type ScoreRPC struct {
 	client *rpc.Client
 }
 
-func (n *ScoreRPC) Score(args *plugin.Args) Result {
-	var resp Result
-	if err := n.client.Call("Plugin.Score", args, &resp); err != nil {
+func (n *ScoreRPC) Run(args *plugin.Args) plugin.ScoreResult {
+	var resp plugin.ScoreResult
+	if err := n.client.Call("Plugin.Run", args, &resp); err != nil {
 		panic(err)
 	}
 	return resp
 }
 
 type ScoreRPCServer struct {
-	Impl Score
+	Impl plugin.ScorePlugin
 }
 
-func (n *ScoreRPCServer) Score(args *plugin.Args, resp *Result) error {
-	*resp = n.Impl.Score(args)
+func (n *ScoreRPCServer) Run(args *plugin.Args, resp *plugin.ScoreResult) error {
+	*resp = n.Impl.Run(args)
 	return nil
 }
 
 type ScorePlugin struct {
-	Impl Score
+	Impl plugin.ScorePlugin
 }
 
 func (n *ScorePlugin) Server(*gop.MuxBroker) (interface{}, error) {

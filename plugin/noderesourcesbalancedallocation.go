@@ -20,7 +20,7 @@ var (
 type NodeResourcesBalancedAllocation struct{}
 type resourceToValueMapAllocation map[string]int64
 
-func (n *NodeResourcesBalancedAllocation) Score(args *plugin.Args) common.Result {
+func (n *NodeResourcesBalancedAllocation) Run(args *plugin.Args) plugin.ScoreResult {
 	requested := make(resourceToValueMapAllocation)
 	allocatable := make(resourceToValueMapAllocation)
 
@@ -31,7 +31,7 @@ func (n *NodeResourcesBalancedAllocation) Score(args *plugin.Args) common.Result
 		}
 	}
 
-	return common.Result{
+	return plugin.ScoreResult{
 		Score: n.balancedResourceScorer(requested, allocatable),
 	}
 }

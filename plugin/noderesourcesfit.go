@@ -18,7 +18,7 @@ var (
 type NodeResourcesFit struct{}
 type resourceToValueMapFit map[string]int64
 
-func (n *NodeResourcesFit) Score(args *plugin.Args) common.Result {
+func (n *NodeResourcesFit) Run(args *plugin.Args) plugin.ScoreResult {
 	requested := make(resourceToValueMapFit)
 	allocatable := make(resourceToValueMapFit)
 
@@ -29,7 +29,7 @@ func (n *NodeResourcesFit) Score(args *plugin.Args) common.Result {
 		}
 	}
 
-	return common.Result{
+	return plugin.ScoreResult{
 		Score: n.leastResourceScorer(requested, allocatable),
 	}
 }

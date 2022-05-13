@@ -129,7 +129,7 @@ func main() {
 	}
 }
 
-func helper(path, name string, args *plugin.Args) common.Result {
+func helper(path, name string, args *plugin.Args) plugin.ScoreResult {
 	config := gop.HandshakeConfig{
 		ProtocolVersion:  1,
 		MagicCookieKey:   "plugin-score",
@@ -156,8 +156,8 @@ func helper(path, name string, args *plugin.Args) common.Result {
 
 	rpcClient, _ := client.Client()
 	raw, _ := rpcClient.Dispense(name)
-	n := raw.(common.Score)
-	status := n.Score(args)
+	n := raw.(plugin.ScorePlugin)
+	status := n.Run(args)
 
 	return status
 }
