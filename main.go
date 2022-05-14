@@ -156,7 +156,7 @@ func helper(path, name string, args *common.Args) plugin.ScoreResult {
 
 	rpcClient, _ := client.Client()
 	raw, _ := rpcClient.Dispense(name)
-	n := raw.(plugin.ScorePlugin)
+	n := raw.(plugin.ScoreImpl)
 	status := n.Run(args)
 
 	return status
