@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/hashicorp/go-hclog v1.2.0
 	github.com/hashicorp/go-plugin v1.4.4
-	github.com/pipego/scheduler v0.9.0
+	github.com/pipego/scheduler v1.0.0
 )
 
 require (
