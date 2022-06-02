@@ -1,13 +1,47 @@
 ---
 builds:
-  - env: [CGO_ENABLED=0]
+  - id: plugin-score-test
+    env:
+      - CGO_ENABLED=0
     goos:
       - darwin
       - linux
       - windows
     goarch:
       - amd64
-    main: .
+    dir: .
+    main: main.go
+    binary: plugin-score-test
+    flags:
+      - -trimpath
+    ldflags: -s -w -X config.Build={{.Date}} -X config.Version={{.Version}}
+  - id: score-noderesourcesbalancedallocation
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+    dir: plugin
+    main: noderesourcesbalancedallocation.go
+    binary: score-noderesourcesbalancedallocation
+    flags:
+      - -trimpath
+    ldflags: -s -w -X config.Build={{.Date}} -X config.Version={{.Version}}
+  - id: score-noderesourcesfit
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+    dir: plugin
+    main: noderesourcesfit.go
+    binary: score-noderesourcesfit
     flags:
       - -trimpath
     ldflags: -s -w -X config.Build={{.Date}} -X config.Version={{.Version}}
