@@ -9,8 +9,6 @@ require (
 )
 
 require (
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
-	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect
@@ -25,6 +23,4 @@ require (
 	google.golang.org/genproto v0.0.0-20210207032614-bba0dbe2a9ea // indirect
 	google.golang.org/grpc v1.46.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
-	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
