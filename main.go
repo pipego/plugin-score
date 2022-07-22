@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/hashicorp/go-hclog"
 	gop "github.com/hashicorp/go-plugin"
+	"github.com/pkg/errors"
 
 	"github.com/pipego/scheduler/common"
 	"github.com/pipego/scheduler/plugin"
@@ -136,12 +138,16 @@ var (
 
 func main() {
 	for _, item := range configs {
-		result := helper(item.path, item.name, item.args)
-		fmt.Printf("%s: %d\n", item.name, result.Score)
+		p, _ := filepath.Abs(item.path)
+		if result, err := helper(p, item.name, item.args); err == nil {
+			fmt.Printf("%s: %d\n", item.name, result.Score)
+		} else {
+			fmt.Printf(err.Error())
+		}
 	}
 }
 
-func helper(path, name string, args *common.Args) plugin.ScoreResult {
+func helper(path, name string, args *common.Args) (plugin.ScoreResult, error) {
 	plugins := map[string]gop.Plugin{
 		name: &plugin.Score{},
 	}
@@ -154,10 +160,18 @@ func helper(path, name string, args *common.Args) plugin.ScoreResult {
 	})
 	defer client.Kill()
 
-	rpcClient, _ := client.Client()
-	raw, _ := rpcClient.Dispense(name)
+	rpcClient, err := client.Client()
+	if err != nil {
+		return plugin.ScoreResult{}, errors.Wrap(err, "failed to init client")
+	}
+
+	raw, err := rpcClient.Dispense(name)
+	if err != nil {
+		return plugin.ScoreResult{}, errors.Wrap(err, "failed to dispense instance")
+	}
+
 	n := raw.(plugin.ScoreImpl)
 	status := n.Run(args)
 
-	return status
+	return status, nil
 }
