@@ -1,3 +1,4 @@
+//nolint:typecheck
 package main
 
 import (
@@ -108,7 +109,6 @@ func (n *NodeResourcesBalancedAllocation) balancedResourceScorer(requested, allo
 	return int64((1 - std) * float64(common.MaxNodeScore))
 }
 
-// nolint:typecheck
 func main() {
 	config := gop.HandshakeConfig{
 		ProtocolVersion:  1,

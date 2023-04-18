@@ -1,3 +1,4 @@
+//nolint:typecheck
 package main
 
 import (
@@ -107,7 +108,6 @@ func (n *NodeResourcesFit) leastRequestedScore(requested, capacity int64) int64 
 	return ((capacity - requested) * common.MaxNodeScore) / capacity
 }
 
-// nolint:typecheck
 func main() {
 	config := gop.HandshakeConfig{
 		ProtocolVersion:  1,
