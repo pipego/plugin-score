@@ -35,7 +35,7 @@ func (n *NodeResourcesFit) Run(args *common.Args) plugin.ScoreResult {
 	}
 }
 
-func (n *NodeResourcesFit) calculateResourceAllocatableRequest(node *common.Node, task *common.Task, resource string) (int64, int64) {
+func (n *NodeResourcesFit) calculateResourceAllocatableRequest(node *common.Node, task *common.Task, resource string) (alloc, req int64) {
 	taskRequest := n.calculateTaskResourceRequest(task, resource)
 
 	switch resource {
@@ -78,7 +78,8 @@ func (n *NodeResourcesFit) calculateTaskResourceRequest(task *common.Task, resou
 // prioritizes based on the minimum of the average of the fraction of requested to capacity.
 //
 // Details:
-// (cpu((capacity-requested)*MaxNodeScore*cpuWeight/capacity) + memory((capacity-requested)*MaxNodeScore*memoryWeight/capacity) + ...)/weightSum
+// (cpu((capacity-requested)*MaxNodeScore*cpuWeight/capacity) + memory((capacity-requested)*MaxNodeScore*memoryWeight/capacity)
+// + ...)/weightSum
 func (n *NodeResourcesFit) leastResourceScorer(requested, allocable resourceToValueMapFit) int64 {
 	var nodeScore, weightSum int64
 

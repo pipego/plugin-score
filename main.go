@@ -142,7 +142,7 @@ func main() {
 		if result, err := helper(p, item.name, item.args); err == nil {
 			fmt.Printf("%s: %d\n", item.name, result.Score)
 		} else {
-			fmt.Printf(err.Error())
+			fmt.Printf("%s\n", err.Error())
 		}
 	}
 }

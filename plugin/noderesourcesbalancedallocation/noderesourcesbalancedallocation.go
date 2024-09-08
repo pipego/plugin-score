@@ -10,6 +10,10 @@ import (
 	"github.com/pipego/scheduler/plugin"
 )
 
+const (
+	fractionLen = 2
+)
+
 var (
 	resourceToWeightMapAllocation = map[string]int64{
 		common.ResourceCPU:     common.DefaultCPUWeight,
@@ -37,7 +41,8 @@ func (n *NodeResourcesBalancedAllocation) Run(args *common.Args) plugin.ScoreRes
 	}
 }
 
-func (n *NodeResourcesBalancedAllocation) calculateResourceAllocatableRequest(node *common.Node, task *common.Task, resource string) (int64, int64) {
+func (n *NodeResourcesBalancedAllocation) calculateResourceAllocatableRequest(node *common.Node, task *common.Task,
+	resource string) (alloc, req int64) {
 	taskRequest := n.calculateTaskResourceRequest(task, resource)
 
 	switch resource {
@@ -93,13 +98,13 @@ func (n *NodeResourcesBalancedAllocation) balancedResourceScorer(requested, allo
 	// For most cases, resources are limited to cpu and memory, the std could be simplified to std := (fraction1-fraction2)/2
 	// len(fractions) > 2: calculate std based on the well-known formula - root square of Σ((fraction(i)-mean)^2)/len(fractions)
 	// Otherwise, set the std to zero is enough.
-	if len(resourceToFractions) == 2 {
-		std = math.Abs((resourceToFractions[0] - resourceToFractions[1]) / 2)
-	} else if len(resourceToFractions) > 2 {
+	if len(resourceToFractions) == fractionLen {
+		std = math.Abs((resourceToFractions[0] - resourceToFractions[1]) / fractionLen)
+	} else if len(resourceToFractions) > fractionLen {
 		mean := totalFraction / float64(len(resourceToFractions))
 		var sum float64
 		for _, fraction := range resourceToFractions {
-			sum = sum + (fraction-mean)*(fraction-mean)
+			sum += (fraction - mean) * (fraction - mean)
 		}
 		std = math.Sqrt(sum / float64(len(resourceToFractions)))
 	}
